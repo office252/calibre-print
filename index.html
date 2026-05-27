@@ -128,7 +128,7 @@ function sp(){
     var t='SIZE 40 mm,30 mm\nGAP 2 mm,0\nDIRECTION 0\nCLS\n'+
   'TEXT 100,5,"3",0,1,1,"CALIBRE AI"\n'+
   'QRCODE 10,30,L,3,A,0,"'+url+'"\n'+
-  'TEXT 55,185,"3",0,1,1,"'+jn+'"\n'+
+  'TEXT 40,185,"3",0,1,1,"'+jn+'"\n'+
   'PRINT '+qty+'\n';
     return c.writeValue(new TextEncoder().encode(t));
   })
