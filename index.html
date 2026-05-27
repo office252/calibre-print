@@ -110,8 +110,8 @@ function sp(){
   .then(function(c){
     var t='SIZE 40 mm,30 mm\nGAP 2 mm,0\nDIRECTION 1\nCLS\n'+
   'QRCODE 10,10,L,3,A,0,"'+jn+'"\n'+
-  'TEXT 200,15,"3",0,1,1,"CALIBRE AI"\n'+
-  'TEXT 190,120,"3",0,1,1,"'+jn+'"\n'+
+  'TEXT 155,15,"3",0,1,1,"CALIBRE AI"\n'+
+  'TEXT 145,120,"3",0,1,1,"'+jn+'"\n'+
   'PRINT 1\n';
     return c.writeValue(new TextEncoder().encode(t));
   })
