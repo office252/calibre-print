@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calibre AI — Print Label</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f0f2f5;min-height:100vh}
+.hdr{background:#1a73e8;color:white;padding:16px 20px}
+.hdr-t{font-size:17px;font-weight:700;letter-spacing:.04em}
+.hdr-s{font-size:12px;opacity:.85;margin-top:2px}
+.srch{padding:12px 16px;background:white;border-bottom:1px solid #e0e0e0}
+.srch input{width:100%;padding:10px 14px;border:1px solid #ccc;border-radius:8px;font-size:15px;outline:none}
+.srch input:focus{border-color:#1a73e8}
+.list{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.card{background:white;border-radius:10px;border:1px solid #e0e0e0;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.card:active{background:#f5f5f5}
+.jnum{font-size:15px;font-weight:600;color:#111}
+.jtyp{font-size:12px;color:#888;margin-top:2px}
+.empty{text-align:center;padding:40px 20px;color:#888;font-size:14px}
+.ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.ov.on{display:flex}
+.modal{background:white;border-radius:14px;width:90%;max-width:320px;overflow:hidden}
+.mhdr{background:#1a73e8;color:white;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.mcls{background:none;border:none;color:white;font-size:22px;cursor:pointer;line-height:1;padding:0}
+.mbdy{padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.lbl{background:white;border:1px solid #ccc;border-radius:4px;width:220px;height:165px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px}
+.lco{font-size:11px;font-weight:700;letter-spacing:.08em;color:#111}
+.ljn{font-size:10px;font-weight:600;font-family:Courier New,monospace;color:#111;letter-spacing:.04em}
+.pbtn{background:#1a73e8;color:white;border:none;border-radius:8px;padding:13px 0;font-size:15px;font-weight:600;width:220px;cursor:pointer}
+.pbtn:disabled{background:#aaa;cursor:not-allowed}
+.pmsg{font-size:12px;color:#555;text-align:center;min-height:18px}
+.loading{text-align:center;padding:40px 20px;color:#888;font-size:14px}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="hdr-t">CALIBRE AI</div><div class="hdr-s">Label Print Station</div></div>
+<div class="srch"><input id="si" type="text" placeholder="Search job number..." oninput="fj()"></div>
+<div id="list" class="list"><div class="loading">Loading jobs...</div></div>
+<div class="ov" id="ov"><div class="modal">
+<div class="mhdr"><span id="mt">Print Label</span><button class="mcls" onclick="cm()">&#x2715;</button></div>
+<div class="mbdy" id="mb"></div>
+</div></div>
+<script>
+var SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
+var AJ = [];
+
+window.onload = function() {
+  fetch(SCRIPT_URL)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      AJ = data;
+      rj(AJ);
+    })
+    .catch(function(e){
+      document.getElementById('list').innerHTML='<div class="empty">Error loading jobs: '+e.message+'</div>';
+    });
+};
+
+function rj(jobs){
+  var l=document.getElementById('list');
+  if(!jobs||!jobs.length){l.innerHTML='<div class="empty">No jobs found.</div>';return;}
+  var h='';
+  for(var i=0;i<jobs.length;i++){
+    var jn=jobs[i].j,qu=jobs[i].q;
+    var tp=jn.indexOf('-DS-')!==-1?'Direct Supply':'Factory Material';
+    h+='<div class="card" data-jn="'+jn+'" data-qu="'+qu+'" onclick="op(this)">';
+    h+='<div><div class="jnum">'+jn+'</div><div class="jtyp">'+tp+'</div></div>';
+    h+='<span style="font-size:22px">&#128424;</span></div>';
+  }
+  l.innerHTML=h;
+}
+
+function fj(){
+  var q=document.getElementById('si').value.toLowerCase();
+  rj(AJ.filter(function(x){return x.j.toLowerCase().indexOf(q)!==-1;}));
+}
+
+function op(el){
+  var jn=el.getAttribute('data-jn');
+  var qu=el.getAttribute('data-qu');
+  window._jn=jn;
+  document.getElementById('mt').textContent=jn;
+  document.getElementById('mb').innerHTML=
+    '<div class="lbl">'+
+    '<div class="lco">CALIBRE AI</div>'+
+    '<img id="qi" src="'+qu+'" width="100" height="100" style="object-fit:contain">'+
+    '<div class="ljn">'+jn+'</div>'+
+    '</div>'+
+    '<button class="pbtn" id="pb" onclick="sp()">&#128424; Print Label</button>'+
+    '<div class="pmsg" id="ps">Ready to print</div>';
+  document.getElementById('ov').classList.add('on');
+}
+
+function cm(){document.getElementById('ov').classList.remove('on');}
+
+function sp(){
+  var jn=window._jn;
+  var btn=document.getElementById('pb');
+  var sts=document.getElementById('ps');
+  var img=document.getElementById('qi');
+  if(!img.complete||img.naturalWidth===0){sts.textContent='QR not loaded yet.';sts.style.color='#c62828';return;}
+  btn.disabled=true;btn.textContent='Connecting...';
+  sts.textContent='Looking for printer...';sts.style.color='#555';
+  if(!navigator.bluetooth){sts.textContent='Bluetooth not supported.';sts.style.color='#c62828';btn.disabled=false;btn.textContent='&#128424; Print Label';return;}
+  navigator.bluetooth.requestDevice({filters:[{name:'BlueTooth Printer'}],optionalServices:['000018f0-0000-1000-8000-00805f9b34fb']})
+  .then(function(d){sts.textContent='Connected. Sending...';btn.textContent='Printing...';return d.gatt.connect();})
+  .then(function(s){return s.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');})
+  .then(function(s){return s.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');})
+  .then(function(c){
+    var t='SIZE 40 mm,30 mm\nGAP 2 mm,0\nDIRECTION 0\nCLS\n'+
+      'TEXT 160,8,"3",0,1,1,"CALIBRE AI"\n'+
+      'QRCODE 80,22,L,4,A,0,"'+jn+'"\n'+
+      'TEXT 160,196,"3",0,1,1,"'+jn+'"\n'+
+      'PRINT 1\n';
+    return c.writeValue(new TextEncoder().encode(t));
+  })
+  .then(function(){sts.textContent='Printed successfully!';sts.style.color='#2e7d32';btn.textContent='&#128424; Print Label';btn.disabled=false;})
+  .catch(function(e){sts.textContent=e.name==='NotFoundError'?'No printer selected.':'Error: '+e.message;sts.style.color='#c62828';btn.textContent='&#128424; Print Label';btn.disabled=false;});
+}
+</script>
+</body>
+</html>
