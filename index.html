@@ -126,10 +126,10 @@ function sp(){
   .then(function(s){return s.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');})
   .then(function(c){
     var t='SIZE 40 mm,30 mm\nGAP 2 mm,0\nDIRECTION 0\nCLS\n'+
-      'TEXT 160,5,"3",0,1,1,"CALIBRE AI"\n'+
-      'QRCODE 103,30,L,3,A,0,"'+url+'"\n'+
-      'TEXT 160,185,"3",0,1,1,"'+jn+'"\n'+
-      'PRINT '+qty+'\n';
+  'TEXT 100,5,"3",0,1,1,"CALIBRE AI"\n'+
+  'QRCODE 10,30,L,3,A,0,"'+url+'"\n'+
+  'TEXT 100,185,"3",0,1,1,"'+jn+'"\n'+
+  'PRINT '+qty+'\n';
     return c.writeValue(new TextEncoder().encode(t));
   })
   .then(function(){sts.textContent='Printed '+qty+' label'+(qty>1?'s':'')+'!';sts.style.color='#2e7d32';btn.textContent='&#128424; Print Label';btn.disabled=false;})
