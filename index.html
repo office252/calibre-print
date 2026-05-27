@@ -30,6 +30,9 @@ body{font-family:Arial,sans-serif;background:#f0f2f5;min-height:100vh}
 .pbtn{background:#1a73e8;color:white;border:none;border-radius:8px;padding:13px 0;font-size:15px;font-weight:600;width:220px;cursor:pointer}
 .pbtn:disabled{background:#aaa;cursor:not-allowed}
 .pmsg{font-size:12px;color:#555;text-align:center;min-height:18px}
+.qty{display:flex;align-items:center;gap:12px}
+.qty button{background:#e8f0fe;border:none;border-radius:6px;width:36px;height:36px;font-size:20px;cursor:pointer;color:#1a73e8;font-weight:700}
+.qty span{font-size:16px;font-weight:600;color:#111;min-width:24px;text-align:center}
 </style>
 </head>
 <body>
@@ -63,9 +66,9 @@ function rj(jobs){
   if(!jobs||!jobs.length){l.innerHTML='<div class="empty">No jobs found.</div>';return;}
   var h='';
   for(var i=0;i<jobs.length;i++){
-    var jn=jobs[i].j,qu=jobs[i].q;
+    var jn=jobs[i].j, qu=jobs[i].q, url=jobs[i].u||'';
     var tp=jn.indexOf('-DS-')!==-1?'Direct Supply':'Factory Material';
-    h+='<div class="card" data-jn="'+jn+'" data-qu="'+qu+'" onclick="op(this)">';
+    h+='<div class="card" data-jn="'+jn+'" data-qu="'+qu+'" data-url="'+url+'" onclick="op(this)">';
     h+='<div><div class="jnum">'+jn+'</div><div class="jtyp">'+tp+'</div></div>';
     h+='<span style="font-size:22px">&#128424;</span></div>';
   }
@@ -80,7 +83,10 @@ function fj(){
 function op(el){
   var jn=el.getAttribute('data-jn');
   var qu=el.getAttribute('data-qu');
+  var url=el.getAttribute('data-url');
   window._jn=jn;
+  window._url=url;
+  window._qty=1;
   document.getElementById('mt').textContent=jn;
   document.getElementById('mb').innerHTML=
     '<div class="lbl">'+
@@ -88,18 +94,29 @@ function op(el){
     '<img id="qi" src="https://drive.google.com/uc?export=view&id='+qu+'" width="100" height="100" style="object-fit:contain">'+
     '<div class="ljn">'+jn+'</div>'+
     '</div>'+
+    '<div class="qty">'+
+    '<button onclick="chgQty(-1)">&#8722;</button>'+
+    '<span id="qtyVal">1</span>'+
+    '<button onclick="chgQty(1)">&#43;</button>'+
+    '</div>'+
     '<button class="pbtn" id="pb" onclick="sp()">&#128424; Print Label</button>'+
     '<div class="pmsg" id="ps">Ready to print</div>';
   document.getElementById('ov').classList.add('on');
+}
+
+function chgQty(d){
+  window._qty = Math.max(1, Math.min(20, (window._qty||1) + d));
+  document.getElementById('qtyVal').textContent = window._qty;
 }
 
 function cm(){document.getElementById('ov').classList.remove('on');}
 
 function sp(){
   var jn=window._jn;
+  var url=window._url||jn;
+  var qty=window._qty||1;
   var btn=document.getElementById('pb');
   var sts=document.getElementById('ps');
-  var img=document.getElementById('qi');
   btn.disabled=true;btn.textContent='Connecting...';
   sts.textContent='Looking for printer...';sts.style.color='#555';
   if(!navigator.bluetooth){sts.textContent='Bluetooth not supported.';sts.style.color='#c62828';btn.disabled=false;btn.textContent='&#128424; Print Label';return;}
@@ -109,13 +126,13 @@ function sp(){
   .then(function(s){return s.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');})
   .then(function(c){
     var t='SIZE 40 mm,30 mm\nGAP 2 mm,0\nDIRECTION 0\nCLS\n'+
-  'QRCODE 10,10,L,3,A,0,"'+jn+'"\n'+
-  'TEXT 120,10,"3",0,1,1,"CALIBRE AI"\n'+
-  'TEXT 110,120,"3",0,1,1,"'+jn+'"\n'+
-  'PRINT 1\n';
+      'TEXT 160,5,"3",0,1,1,"CALIBRE AI"\n'+
+      'QRCODE 103,30,L,3,A,0,"'+url+'"\n'+
+      'TEXT 160,185,"3",0,1,1,"'+jn+'"\n'+
+      'PRINT '+qty+'\n';
     return c.writeValue(new TextEncoder().encode(t));
   })
-  .then(function(){sts.textContent='Printed successfully!';sts.style.color='#2e7d32';btn.textContent='&#128424; Print Label';btn.disabled=false;})
+  .then(function(){sts.textContent='Printed '+qty+' label'+(qty>1?'s':'')+'!';sts.style.color='#2e7d32';btn.textContent='&#128424; Print Label';btn.disabled=false;})
   .catch(function(e){sts.textContent=e.name==='NotFoundError'?'No printer selected.':'Error: '+e.message;sts.style.color='#c62828';btn.textContent='&#128424; Print Label';btn.disabled=false;});
 }
 </script>
