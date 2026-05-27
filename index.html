@@ -46,12 +46,15 @@ var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzoCk5RbUv9GV-InkwgbV
 var AJ = [];
 
 window.onload = function() {
-  fetch(SCRIPT_URL)
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      AJ = data;
-      rj(AJ);
-    })
+  var s = document.createElement('script');
+  s.src = SCRIPT_URL + '?callback=handleData';
+  document.body.appendChild(s);
+};
+
+function handleData(data) {
+  AJ = data;
+  rj(AJ);
+}
     .catch(function(e){
       document.getElementById('list').innerHTML='<div class="empty">Error loading jobs: '+e.message+'</div>';
     });
