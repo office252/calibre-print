@@ -100,7 +100,6 @@ function sp(){
   var btn=document.getElementById('pb');
   var sts=document.getElementById('ps');
   var img=document.getElementById('qi');
-  if(!img.complete||img.naturalWidth===0){sts.textContent='QR not loaded yet.';sts.style.color='#c62828';return;}
   btn.disabled=true;btn.textContent='Connecting...';
   sts.textContent='Looking for printer...';sts.style.color='#555';
   if(!navigator.bluetooth){sts.textContent='Bluetooth not supported.';sts.style.color='#c62828';btn.disabled=false;btn.textContent='&#128424; Print Label';return;}
