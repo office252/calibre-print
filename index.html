@@ -30,13 +30,12 @@ body{font-family:Arial,sans-serif;background:#f0f2f5;min-height:100vh}
 .pbtn{background:#1a73e8;color:white;border:none;border-radius:8px;padding:13px 0;font-size:15px;font-weight:600;width:220px;cursor:pointer}
 .pbtn:disabled{background:#aaa;cursor:not-allowed}
 .pmsg{font-size:12px;color:#555;text-align:center;min-height:18px}
-.loading{text-align:center;padding:40px 20px;color:#888;font-size:14px}
 </style>
 </head>
 <body>
 <div class="hdr"><div class="hdr-t">CALIBRE AI</div><div class="hdr-s">Label Print Station</div></div>
 <div class="srch"><input id="si" type="text" placeholder="Search job number..." oninput="fj()"></div>
-<div id="list" class="list"><div class="loading">Loading jobs...</div></div>
+<div id="list" class="list"><div style="text-align:center;padding:40px;color:#888">Loading jobs...</div></div>
 <div class="ov" id="ov"><div class="modal">
 <div class="mhdr"><span id="mt">Print Label</span><button class="mcls" onclick="cm()">&#x2715;</button></div>
 <div class="mbdy" id="mb"></div>
@@ -46,18 +45,18 @@ var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpfWIuYKHzVd49ukG1mLW
 var AJ = [];
 
 window.onload = function() {
-  var s = document.createElement('script');
-  s.src = SCRIPT_URL + '?callback=handleData';
-  s.onerror = function() {
-    document.getElementById('list').innerHTML='<div class="empty">Failed to load jobs.</div>';
-  };
-  document.body.appendChild(s);
+  fetch(SCRIPT_URL, {redirect:'follow'})
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var start = text.indexOf('[');
+      var end = text.lastIndexOf(']') + 1;
+      AJ = JSON.parse(text.substring(start, end));
+      rj(AJ);
+    })
+    .catch(function(e){
+      document.getElementById('list').innerHTML='<div class="empty">Error: '+e.message+'</div>';
+    });
 };
-
-function handleData(data) {
-  AJ = data;
-  rj(AJ);
-}
 
 function rj(jobs){
   var l=document.getElementById('list');
