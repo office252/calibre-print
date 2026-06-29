@@ -1,140 +1,586 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Calibre AI — Print Label</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calibre Print Station</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#f0f2f5;min-height:100vh}
-.hdr{background:#1a73e8;color:white;padding:16px 20px}
-.hdr-t{font-size:17px;font-weight:700;letter-spacing:.04em}
-.hdr-s{font-size:12px;opacity:.85;margin-top:2px}
-.srch{padding:12px 16px;background:white;border-bottom:1px solid #e0e0e0}
-.srch input{width:100%;padding:10px 14px;border:1px solid #ccc;border-radius:8px;font-size:15px;outline:none}
-.srch input:focus{border-color:#1a73e8}
-.list{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
-.card{background:white;border-radius:10px;border:1px solid #e0e0e0;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
-.card:active{background:#f5f5f5}
-.jnum{font-size:15px;font-weight:600;color:#111}
-.jtyp{font-size:12px;color:#888;margin-top:2px}
-.empty{text-align:center;padding:40px 20px;color:#888;font-size:14px}
-.ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
-.ov.on{display:flex}
-.modal{background:white;border-radius:14px;width:90%;max-width:320px;overflow:hidden}
-.mhdr{background:#1a73e8;color:white;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
-.mcls{background:none;border:none;color:white;font-size:22px;cursor:pointer;line-height:1;padding:0}
-.mbdy{padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px}
-.lbl{background:white;border:1px solid #ccc;border-radius:4px;width:220px;height:165px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px}
-.lco{font-size:11px;font-weight:700;letter-spacing:.08em;color:#111}
-.ljn{font-size:10px;font-weight:600;font-family:Courier New,monospace;color:#111;letter-spacing:.04em}
-.pbtn{background:#1a73e8;color:white;border:none;border-radius:8px;padding:13px 0;font-size:15px;font-weight:600;width:220px;cursor:pointer}
-.pbtn:disabled{background:#aaa;cursor:not-allowed}
-.pmsg{font-size:12px;color:#555;text-align:center;min-height:18px}
-.qty{display:flex;align-items:center;gap:12px}
-.qty button{background:#e8f0fe;border:none;border-radius:6px;width:36px;height:36px;font-size:20px;cursor:pointer;color:#1a73e8;font-weight:700}
-.qty span{font-size:16px;font-weight:600;color:#111;min-width:24px;text-align:center}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f0f0;
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: #000;
+    color: #50C878;
+    text-align: center;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .header h1 { font-size: 18px; font-weight: bold; letter-spacing: 1px; }
+  .header p  { font-size: 11px; color: #888; margin-top: 4px; }
+
+  /* ── DEPARTMENT SELECTOR ── */
+  .dept-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .dept-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .dept-btn.active-ai {
+    background: #000;
+    color: #00AEEF;
+    border-color: #00AEEF;
+  }
+  .dept-btn.active-pip {
+    background: #000;
+    color: #50C878;
+    border-color: #50C878;
+  }
+  .dept-btn:not(.active-ai):not(.active-pip):hover {
+    background: #f5f5f5;
+  }
+
+  /* ── STATUS BAR ── */
+  .status {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    flex-shrink: 0;
+  }
+  .status-dot.connected    { background: #50C878; }
+  .status-dot.disconnected { background: #e74c3c; }
+  .status-dot.loading      { background: #f39c12; animation: pulse 1s infinite; }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.3; }
+  }
+
+  /* ── CONNECT BUTTON ── */
+  .connect-btn {
+    width: 100%;
+    padding: 14px;
+    background: #000;
+    color: #50C878;
+    border: 2px solid #50C878;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+  .connect-btn:active { opacity: 0.8; }
+  .connect-btn.ai-theme {
+    color: #00AEEF;
+    border-color: #00AEEF;
+  }
+
+  /* ── JOB LIST ── */
+  .jobs-header {
+    font-size: 11px;
+    font-weight: bold;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  .job-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .job-card:active { background: #f5f5f5; }
+  .job-card.selected-pip {
+    border-color: #50C878;
+    background: #EAF7EE;
+  }
+  .job-card.selected-ai {
+    border-color: #00AEEF;
+    background: #E3F2FD;
+  }
+
+  .job-number {
+    font-size: 15px;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 4px;
+  }
+  .job-number span {
+    font-size: 11px;
+    font-weight: normal;
+    color: #888;
+    margin-left: 8px;
+  }
+  .job-meta {
+    font-size: 12px;
+    color: #666;
+  }
+  .job-status {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #f0f0f0;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  /* ── QR BADGE ── */
+  .qr-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #EAF7EE;
+    color: #1A7A40;
+    margin-left: 6px;
+  }
+  .qr-badge.no-qr {
+    background: #FFEBEE;
+    color: #C00000;
+  }
+
+  /* ── COPIES SELECTOR ── */
+  .copies-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .copies-label { font-size: 13px; color: #444; font-weight: bold; }
+  .copies-btn {
+    width: 36px; height: 36px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f5f5f5;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .copies-count {
+    font-size: 18px;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: center;
+  }
+
+  /* ── PRINT BUTTON ── */
+  .print-btn {
+    width: 100%;
+    padding: 16px;
+    background: #50C878;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+  .print-btn:disabled {
+    background: #ccc;
+    color: #888;
+    cursor: not-allowed;
+  }
+  .print-btn.ai-theme {
+    background: #00AEEF;
+    color: #fff;
+  }
+  .print-btn:not(:disabled):active { opacity: 0.85; }
+
+  /* ── LOG ── */
+  .log {
+    background: #000;
+    color: #50C878;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 11px;
+    font-family: monospace;
+    max-height: 160px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+  }
+  .log-entry { margin-bottom: 4px; }
+  .log-entry.error { color: #e74c3c; }
+  .log-entry.info  { color: #888; }
+
+  /* ── LOADING ── */
+  .loading-spinner {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+    font-size: 13px;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #888;
+    font-size: 13px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
+  }
+
+  .refresh-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #666;
+    margin-bottom: 16px;
+  }
+  .refresh-btn:active { background: #f5f5f5; }
 </style>
 </head>
 <body>
-<div class="hdr"><div class="hdr-t">CALIBRE AI</div><div class="hdr-s">Label Print Station</div></div>
-<div class="srch"><input id="si" type="text" placeholder="Search job number..." oninput="fj()"></div>
-<div id="list" class="list"><div style="text-align:center;padding:40px;color:#888">Loading jobs...</div></div>
-<div class="ov" id="ov"><div class="modal">
-<div class="mhdr"><span id="mt">Print Label</span><button class="mcls" onclick="cm()">&#x2715;</button></div>
-<div class="mbdy" id="mb"></div>
-</div></div>
+
+<!-- HEADER -->
+<div class="header">
+  <h1 id="headerTitle">CALIBRE PRINT STATION</h1>
+  <p id="headerSub">Select department then connect printer</p>
+</div>
+
+<!-- DEPARTMENT SELECTOR -->
+<div class="dept-selector">
+  <div class="dept-btn active-pip" id="btnPiping" onclick="setDept('piping')">
+    🟢 PIPING DIVISION
+  </div>
+  <div class="dept-btn" id="btnAI" onclick="setDept('ai')">
+    🔵 CALIBRE AI
+  </div>
+</div>
+
+<!-- PRINTER STATUS -->
+<div class="status">
+  <div class="status-dot" id="statusDot"></div>
+  <span id="statusText">Printer not connected</span>
+</div>
+
+<!-- CONNECT BUTTON -->
+<button class="connect-btn" id="connectBtn" onclick="connectPrinter()">
+  ⚡ CONNECT PRINTER
+</button>
+
+<!-- REFRESH -->
+<button class="refresh-btn" onclick="loadJobs()">↻ Refresh jobs</button>
+
+<!-- JOB LIST -->
+<div class="jobs-header" id="jobsHeader">SELECT A JOB TO PRINT</div>
+<div id="jobsList"><div class="loading-spinner">Loading jobs...</div></div>
+
+<!-- COPIES -->
+<div class="copies-row">
+  <span class="copies-label">Copies:</span>
+  <button class="copies-btn" onclick="changeCopies(-1)">−</button>
+  <span class="copies-count" id="copiesCount">1</span>
+  <button class="copies-btn" onclick="changeCopies(1)">+</button>
+</div>
+
+<!-- PRINT BUTTON -->
+<button class="print-btn" id="printBtn" disabled onclick="printLabel()">
+  PRINT LABEL
+</button>
+
+<!-- LOG -->
+<div class="log" id="logPanel">
+  <div class="log-entry info">Print station ready.</div>
+</div>
+
 <script>
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzAt8B-Lni6DPp6BrUTA-ZPBTJFuLLivMxZuLJ-wqv80NBfq2BhI6YdRlk-d-QCDyK/exec';
-var AJ = [];
+// ── CONFIGURATION ─────────────────────────────────────────────────────────────
+var SCRIPT_URL_PIPING = 'https://script.google.com/macros/s/AKfycbyRNsNAD4OnryXiAdY3xkODrxsKzq02Ra1Vfu_LY2fZSOPMzM-e-BK8fqdECSQo4uY/exec';
+var SCRIPT_URL_AI     = 'https://script.google.com/macros/s/AKfycbxzAt8B-Lni6DPp6BrUTA-ZPBTJFuLLivMxZuLJ-wqv80NBfq2BhI6YdRlk-d-QCDyK/exec';
 
-window.onload = function() {
-  fetch(SCRIPT_URL, {redirect:'follow'})
-    .then(function(r){ return r.text(); })
-    .then(function(text){
-      var start = text.indexOf('[');
-      var end = text.lastIndexOf(']') + 1;
-      AJ = JSON.parse(text.substring(start, end));
-      rj(AJ);
-    })
-    .catch(function(e){
-      document.getElementById('list').innerHTML='<div class="empty">Error: '+e.message+'</div>';
-    });
-};
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var currentDept     = 'piping';
+var printer         = null;
+var printerChar     = null;
+var selectedJob     = null;
+var copies          = 1;
+var jobs            = [];
 
-function rj(jobs){
-  var l=document.getElementById('list');
-  if(!jobs||!jobs.length){l.innerHTML='<div class="empty">No jobs found.</div>';return;}
-  var h='';
-  for(var i=0;i<jobs.length;i++){
-    var jn=jobs[i].j, qu=jobs[i].q, url=jobs[i].u||'';
-    var tp=jn.indexOf('-DS-')!==-1?'Direct Supply':'Factory Material';
-    h+='<div class="card" data-jn="'+jn+'" data-qu="'+qu+'" data-url="'+url+'" onclick="op(this)">';
-    h+='<div><div class="jnum">'+jn+'</div><div class="jtyp">'+tp+'</div></div>';
-    h+='<span style="font-size:22px">&#128424;</span></div>';
+// ── DEPARTMENT SWITCH ─────────────────────────────────────────────────────────
+function setDept(dept) {
+  currentDept = dept;
+  selectedJob = null;
+
+  var btnPip = document.getElementById('btnPiping');
+  var btnAI  = document.getElementById('btnAI');
+  var conn   = document.getElementById('connectBtn');
+  var print  = document.getElementById('printBtn');
+
+  btnPip.className = 'dept-btn' + (dept === 'piping' ? ' active-pip' : '');
+  btnAI.className  = 'dept-btn' + (dept === 'ai'     ? ' active-ai'  : '');
+
+  if (dept === 'piping') {
+    conn.className  = 'connect-btn';
+    print.className = 'print-btn';
+    document.getElementById('headerTitle').textContent = 'CALIBRE PIPE STATION';
+  } else {
+    conn.className  = 'connect-btn ai-theme';
+    print.className = 'print-btn ai-theme';
+    document.getElementById('headerTitle').textContent = 'CALIBRE AI STATION';
   }
-  l.innerHTML=h;
+
+  print.disabled = true;
+  loadJobs();
 }
 
-function fj(){
-  var q=document.getElementById('si').value.toLowerCase();
-  rj(AJ.filter(function(x){return x.j.toLowerCase().indexOf(q)!==-1;}));
+// ── LOAD JOBS ─────────────────────────────────────────────────────────────────
+function loadJobs() {
+  var url = currentDept === 'piping' ? SCRIPT_URL_PIPING : SCRIPT_URL_AI;
+  document.getElementById('jobsList').innerHTML =
+    '<div class="loading-spinner">Loading jobs...</div>';
+
+  fetch(url + '?action=getJobs')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      jobs = data.jobs || [];
+      renderJobs();
+    })
+    .catch(function(err){
+      addLog('Failed to load jobs: ' + err.message, 'error');
+      document.getElementById('jobsList').innerHTML =
+        '<div class="empty-state">Could not load jobs.<br>Check connection and try refreshing.</div>';
+    });
 }
 
-function op(el){
-  var jn=el.getAttribute('data-jn');
-  var qu=el.getAttribute('data-qu');
-  var url=el.getAttribute('data-url');
-  window._jn=jn;
-  window._url=url;
-  window._qty=1;
-  document.getElementById('mt').textContent=jn;
-  document.getElementById('mb').innerHTML=
-    '<div class="lbl">'+
-    '<div class="lco">CALIBRE AI</div>'+
-    '<img id="qi" src="https://drive.google.com/uc?export=view&id='+qu+'" width="100" height="100" style="object-fit:contain">'+
-    '<div class="ljn">'+jn+'</div>'+
-    '</div>'+
-    '<div class="qty">'+
-    '<button onclick="chgQty(-1)">&#8722;</button>'+
-    '<span id="qtyVal">1</span>'+
-    '<button onclick="chgQty(1)">&#43;</button>'+
-    '</div>'+
-    '<button class="pbtn" id="pb" onclick="sp()">&#128424; Print Label</button>'+
-    '<div class="pmsg" id="ps">Ready to print</div>';
-  document.getElementById('ov').classList.add('on');
+// ── RENDER JOBS ───────────────────────────────────────────────────────────────
+function renderJobs() {
+  var list = document.getElementById('jobsList');
+  if (!jobs || jobs.length === 0) {
+    list.innerHTML = '<div class="empty-state">No jobs found.</div>';
+    return;
+  }
+
+  var html = '';
+  jobs.forEach(function(job, idx) {
+    var hasQR   = job.qrUrl && job.qrUrl !== '';
+    var selClass = selectedJob && selectedJob.jobNum === job.jobNum
+      ? (currentDept === 'piping' ? ' selected-pip' : ' selected-ai')
+      : '';
+    var qrBadge = hasQR
+      ? '<span class="qr-badge">QR ✓</span>'
+      : '<span class="qr-badge no-qr">No QR</span>';
+    var meta = currentDept === 'piping'
+      ? (job.site || '')
+      : (job.stream || job.site || '');
+
+    html +=
+      '<div class="job-card' + selClass + '" onclick="selectJob(' + idx + ')">' +
+        '<div class="job-number">' + job.jobNum + qrBadge +
+          '<span>' + (job.status || '') + '</span>' +
+        '</div>' +
+        '<div class="job-meta">' + meta + '</div>' +
+      '</div>';
+  });
+
+  list.innerHTML = html;
 }
 
-function chgQty(d){
-  window._qty = Math.max(1, Math.min(20, (window._qty||1) + d));
-  document.getElementById('qtyVal').textContent = window._qty;
+// ── SELECT JOB ────────────────────────────────────────────────────────────────
+function selectJob(idx) {
+  selectedJob = jobs[idx];
+  renderJobs();
+  var printBtn = document.getElementById('printBtn');
+  printBtn.disabled = !printer || !selectedJob;
+  addLog('Selected: ' + selectedJob.jobNum);
 }
 
-function cm(){document.getElementById('ov').classList.remove('on');}
+// ── CONNECT PRINTER ───────────────────────────────────────────────────────────
+function connectPrinter() {
+  if (!navigator.bluetooth) {
+    addLog('Bluetooth not supported on this browser.', 'error');
+    return;
+  }
 
-function sp(){
-  var jn=window._jn;
-  var url=window._url||jn;
-  var qty=window._qty||1;
-  var btn=document.getElementById('pb');
-  var sts=document.getElementById('ps');
-  btn.disabled=true;btn.textContent='Connecting...';
-  sts.textContent='Looking for printer...';sts.style.color='#555';
-  if(!navigator.bluetooth){sts.textContent='Bluetooth not supported.';sts.style.color='#c62828';btn.disabled=false;btn.textContent='&#128424; Print Label';return;}
-  navigator.bluetooth.requestDevice({filters:[{name:'BlueTooth Printer'}],optionalServices:['000018f0-0000-1000-8000-00805f9b34fb']})
-  .then(function(d){sts.textContent='Connected. Sending...';btn.textContent='Printing...';return d.gatt.connect();})
-  .then(function(s){return s.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');})
-  .then(function(s){return s.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');})
-  .then(function(c){
-    var t='SIZE 40 mm,30 mm\nGAP 2 mm,0\nDIRECTION 0\nCLS\n'+
-  'TEXT 100,5,"3",0,1,1,"CALIBRE AI"\n'+
-  'QRCODE 10,30,M,4,A,0,"'+url+'"\n'+
-  'TEXT 40,185,"3",0,1,1,"'+jn+'"\n'+
-  'PRINT '+qty+'\n';
-    return c.writeValue(new TextEncoder().encode(t));
+  setStatus('loading', 'Connecting...');
+  addLog('Searching for printer...');
+
+  navigator.bluetooth.requestDevice({
+    acceptAllDevices: true,
+    optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
   })
-  .then(function(){sts.textContent='Printed '+qty+' label'+(qty>1?'s':'')+'!';sts.style.color='#2e7d32';btn.textContent='&#128424; Print Label';btn.disabled=false;})
-  .catch(function(e){sts.textContent=e.name==='NotFoundError'?'No printer selected.':'Error: '+e.message;sts.style.color='#c62828';btn.textContent='&#128424; Print Label';btn.disabled=false;});
+  .then(function(device) {
+    addLog('Found: ' + device.name);
+    return device.gatt.connect();
+  })
+  .then(function(server) {
+    addLog('Connected to GATT server');
+    return server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+  })
+  .then(function(service) {
+    return service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+  })
+  .then(function(characteristic) {
+    printerChar = characteristic;
+    printer     = true;
+    setStatus('connected', 'Printer connected');
+    addLog('Printer ready ✓');
+    if (selectedJob) {
+      document.getElementById('printBtn').disabled = false;
+    }
+  })
+  .catch(function(err) {
+    setStatus('disconnected', 'Connection failed');
+    addLog('Error: ' + err.message, 'error');
+  });
 }
+
+// ── PRINT LABEL ───────────────────────────────────────────────────────────────
+function printLabel() {
+  if (!selectedJob || !printerChar) {
+    addLog('No job selected or printer not connected.', 'error');
+    return;
+  }
+
+  var job    = selectedJob;
+  var hasQR  = job.qrUrl && job.qrUrl !== '';
+  var tspl   = '';
+
+  if (currentDept === 'piping') {
+    // ── PIPING LABEL ──────────────────────────────────────────────────────
+    // Header: CALIBRE PIPE
+    // QR code linking to job folder
+    // Job number
+    // Site name
+    if (hasQR) {
+      tspl =
+        'SIZE 40 mm,40 mm\r\n' +
+        'GAP 2 mm,0\r\n' +
+        'DIRECTION 0\r\n' +
+        'CLS\r\n' +
+        'TEXT 20,5,"3",0,1,1,"CALIBRE PIPE"\r\n' +
+        'QRCODE 10,30,M,4,A,0,"' + job.qrUrl + '"\r\n' +
+        'TEXT 20,195,"2",0,1,1,"' + job.jobNum + '"\r\n' +
+        'TEXT 20,215,"2",0,1,1,"' + (job.site || '') + '"\r\n' +
+        'PRINT ' + copies + '\r\n';
+    } else {
+      // No QR — print text only label
+      tspl =
+        'SIZE 40 mm,30 mm\r\n' +
+        'GAP 2 mm,0\r\n' +
+        'DIRECTION 0\r\n' +
+        'CLS\r\n' +
+        'TEXT 20,5,"3",0,1,1,"CALIBRE PIPE"\r\n' +
+        'TEXT 20,40,"2",0,1,1,"' + job.jobNum + '"\r\n' +
+        'TEXT 20,65,"2",0,1,1,"' + (job.site || '') + '"\r\n' +
+        'PRINT ' + copies + '\r\n';
+      addLog('Warning: No QR code for this job — printing text label only.', 'error');
+    }
+  } else {
+    // ── CALIBRE AI LABEL ─────────────────────────────────────────────────
+    // Existing Calibre AI label format preserved
+    tspl =
+      'SIZE 40 mm,30 mm\r\n' +
+      'GAP 2 mm,0\r\n' +
+      'DIRECTION 0\r\n' +
+      'CLS\r\n' +
+      'TEXT 100,5,"3",0,1,1,"CALIBRE AI"\r\n' +
+      'QRCODE 10,30,M,4,A,0,"' + (job.qrUrl || job.folderUrl || '') + '"\r\n' +
+      'TEXT 40,185,"3",0,1,1,"' + job.jobNum + '"\r\n' +
+      'PRINT ' + copies + '\r\n';
+  }
+
+  addLog('Sending print job: ' + job.jobNum + ' x' + copies);
+
+  var encoder = new TextEncoder();
+  var data    = encoder.encode(tspl);
+
+  // Split into 20-byte chunks for Bluetooth transmission
+  var chunkSize = 20;
+  var chunks    = [];
+  for (var i = 0; i < data.length; i += chunkSize) {
+    chunks.push(data.slice(i, i + chunkSize));
+  }
+
+  function sendChunk(idx) {
+    if (idx >= chunks.length) {
+      addLog('Print complete ✓');
+      return;
+    }
+    printerChar.writeValue(chunks[idx])
+      .then(function(){ sendChunk(idx + 1); })
+      .catch(function(err){
+        addLog('Print error: ' + err.message, 'error');
+      });
+  }
+
+  sendChunk(0);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function changeCopies(delta) {
+  copies = Math.max(1, Math.min(10, copies + delta));
+  document.getElementById('copiesCount').textContent = copies;
+}
+
+function setStatus(state, text) {
+  var dot  = document.getElementById('statusDot');
+  var span = document.getElementById('statusText');
+  dot.className  = 'status-dot ' + state;
+  span.textContent = text;
+}
+
+function addLog(msg, type) {
+  var log   = document.getElementById('logPanel');
+  var entry = document.createElement('div');
+  entry.className = 'log-entry ' + (type || '');
+  var time = new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  entry.textContent = '[' + time + '] ' + msg;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.onload = function() {
+  setDept('piping');
+};
 </script>
 </body>
 </html>
