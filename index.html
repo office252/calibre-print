@@ -380,7 +380,22 @@ function loadJobs() {
   fetch(url + '?action=getJobs')
     .then(function(r){ return r.json(); })
     .then(function(data){
-      jobs = data.jobs || [];
+      // Handle both response formats:
+      // Piping: {jobs: [{jobNum, site, qrUrl, status}]}
+      // Calibre AI: [{j, q, u}] — array directly
+      if (Array.isArray(data)) {
+        jobs = data.map(function(item) {
+          return {
+            jobNum:    item.j || '',
+            folderUrl: item.u || '',
+            qrUrl:     item.u || '', // QR encodes folder URL directly
+            site:      item.j && item.j.indexOf('DS') > -1 ? 'Direct Supply' : 'Fabrication',
+            status:    ''
+          };
+        });
+      } else {
+        jobs = data.jobs || [];
+      }
       renderJobs();
     })
     .catch(function(err){
@@ -496,7 +511,7 @@ function printLabel() {
         'DIRECTION 0\r\n' +
         'CLS\r\n' +
         'TEXT 20,5,"3",0,1,1,"CALIBRE PIPE"\r\n' +
-        'QRCODE 10,30,M,4,A,0,"' + job.qrUrl + '"\r\n' +
+        'QRCODE 10,30,M,4,A,0,"' + job.folderUrl + '"\r\n' +
         'TEXT 20,195,"2",0,1,1,"' + job.jobNum + '"\r\n' +
         'TEXT 20,215,"2",0,1,1,"' + (job.site || '') + '"\r\n' +
         'PRINT ' + copies + '\r\n';
@@ -515,14 +530,14 @@ function printLabel() {
     }
   } else {
     // ── CALIBRE AI LABEL ─────────────────────────────────────────────────
-    // Existing Calibre AI label format preserved
+    // QR encodes folder URL directly — not the QR image file URL
     tspl =
       'SIZE 40 mm,30 mm\r\n' +
       'GAP 2 mm,0\r\n' +
       'DIRECTION 0\r\n' +
       'CLS\r\n' +
       'TEXT 100,5,"3",0,1,1,"CALIBRE AI"\r\n' +
-      'QRCODE 10,30,M,4,A,0,"' + (job.qrUrl || job.folderUrl || '') + '"\r\n' +
+      'QRCODE 10,30,M,4,A,0,"' + (job.folderUrl || '') + '"\r\n' +
       'TEXT 40,185,"3",0,1,1,"' + job.jobNum + '"\r\n' +
       'PRINT ' + copies + '\r\n';
   }
