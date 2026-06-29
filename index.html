@@ -333,7 +333,7 @@
 
 <script>
 // ── CONFIGURATION ─────────────────────────────────────────────────────────────
-var SCRIPT_URL_PIPING = 'https://script.google.com/macros/s/AKfycbyRNsNAD4OnryXiAdY3xkODrxsKzq02Ra1Vfu_LY2fZSOPMzM-e-BK8fqdECSQo4uY/exec';
+var SCRIPT_URL_PIPING = 'https://script.google.com/macros/s/AKfycbyt17D66ZETlxVSzXK5H3Q3kZov-fSSwBB3-7WeuqiNzY50jdgOrkAxLE_FWLI1Kbk/exec';
 var SCRIPT_URL_AI     = 'https://script.google.com/macros/s/AKfycbxzAt8B-Lni6DPp6BrUTA-ZPBTJFuLLivMxZuLJ-wqv80NBfq2BhI6YdRlk-d-QCDyK/exec';
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -506,14 +506,14 @@ function printLabel() {
     // Site name
     if (hasQR) {
       tspl =
-        'SIZE 40 mm,40 mm\r\n' +
+        'SIZE 40 mm,30 mm\r\n' +
         'GAP 2 mm,0\r\n' +
         'DIRECTION 0\r\n' +
         'CLS\r\n' +
         'TEXT 20,5,"3",0,1,1,"CALIBRE PIPE"\r\n' +
         'QRCODE 10,30,M,4,A,0,"' + job.folderUrl + '"\r\n' +
-        'TEXT 20,195,"2",0,1,1,"' + job.jobNum + '"\r\n' +
-        'TEXT 20,215,"2",0,1,1,"' + (job.site || '') + '"\r\n' +
+        'TEXT 20,185,"2",0,1,1,"' + job.jobNum + '"\r\n' +
+        'TEXT 20,205,"2",0,1,1,"' + (job.site || '') + '"\r\n' +
         'PRINT ' + copies + '\r\n';
     } else {
       // No QR — print text only label
@@ -526,7 +526,6 @@ function printLabel() {
         'TEXT 20,40,"2",0,1,1,"' + job.jobNum + '"\r\n' +
         'TEXT 20,65,"2",0,1,1,"' + (job.site || '') + '"\r\n' +
         'PRINT ' + copies + '\r\n';
-      addLog('Warning: No QR code for this job — printing text label only.', 'error');
     }
   } else {
     // ── CALIBRE AI LABEL ─────────────────────────────────────────────────
